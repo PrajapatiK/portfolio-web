@@ -6,6 +6,7 @@
 
 * {
   font-family: "Montserrat", sans-serif;
+  box-sizing: border-box;
 }
 
 /* width */
@@ -66,7 +67,7 @@ input:focus {
   border-radius: 5px;
 }
 
-textarea{
+textarea {
   height: 100px;
   padding-top: 10px;
 }
