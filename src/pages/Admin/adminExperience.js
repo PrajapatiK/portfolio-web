@@ -1,8 +1,10 @@
 import { Form, Modal, message } from 'antd';
 import React, { useState } from 'react'
-import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { reloadData, setLoading, setPortfolioData } from '../../redux/rootSlice';
+import { apiGet, apiPost } from '../../services/api';
+import Button from '../../components/forms/button';
+import { userStatus } from '../../lib/common/constants';
 
 const AdminExperience = () => {
   const dispatch = useDispatch();
@@ -20,63 +22,65 @@ const AdminExperience = () => {
   const [type, setType] = useState('ADD');
 
   const handleSubmit = async () => {
-    console.log(selectedData);
     try {
       dispatch(setLoading(true));
-      const response = await axios.post(`${process.env.REACT_APP_API_BASEURL}/api/v1/portfolio/addUpdateExperience`, {
+      const response = await apiPost(`/addUpdateExperience`, {
         ...selectedData,
         userId: user.userId,
       });
       dispatch(setLoading(false));
-      console.log(response.data);
-      message.success(response.data.data.message)
+      message.success(response.data.message)
       setShowModal(false);
       setSelectedData(initialState);
       dispatch(setLoading(false));
       // dispatch(reloadData(true));
-      const portfolioData = await axios.get(`${process.env.REACT_APP_API_BASEURL}/api/v1/portfolio/getAllPortfolio?username=${user.username}`);
-      console.log(portfolioData.data.data)
-      dispatch(setPortfolioData(portfolioData.data.data));
+      const portfolioData = await apiGet(`/getAllPortfolio?username=${user.username}`);
+      dispatch(setPortfolioData(portfolioData.data));
     } catch (err) {
-      console.log(err);
       dispatch(setLoading(false));
-      message.error(err.message)
+      message.error(err?.data.message);
     }
   }
 
-  const onDelete = async (item) => {
-    console.log(item);
+  const handleDeleteExperience = async (item) => {
     try {
       dispatch(setLoading(true));
-      const response = await axios.post(`${process.env.REACT_APP_API_BASEURL}/api/v1/portfolio/removeExperience`, {
+      const response = await apiPost(`/removeExperience`, {
         ...item,
         userId: user.userId,
       });
       dispatch(setLoading(false));
-      console.log(response.data);
-      message.success(response.data.data.message)
+      message.success(response.data.message)
       setShowModal(false);
       setSelectedData(initialState);
       dispatch(setLoading(false));
       // dispatch(reloadData(true));
-      const portfolioData = await axios.get(`${process.env.REACT_APP_API_BASEURL}/api/v1/portfolio/getAllPortfolio?username=${user.username}`);
-      console.log(portfolioData?.data.data)
-      dispatch(setPortfolioData(portfolioData?.data.data));
+      const portfolioData = await apiGet(`/getAllPortfolio?username=${user.username}`);
+      dispatch(setPortfolioData(portfolioData?.data));
     } catch (err) {
-      console.log(err);
       dispatch(setLoading(false));
-      message.error(err.message)
+      message.error(err?.data.message);
     }
   }
-  console.log('User: ', user);
+
+  const handleAddExperience = () => {
+    setSelectedData(initialState);
+    setShowModal(true);
+    setType(() => 'ADD');
+  };
+
+  const handleEditExperience = (item) => {
+    setSelectedData(() => item);
+    setShowModal(true);
+    setType(() => 'EDIT');
+  };
+
+  const { status } = user;
+
   return (
     <>
       <div className='flex justify-end'>
-        <button className='bg-primary px-5 py-2 text-white rounded' onClick={() => {
-          setSelectedData(initialState);
-          setShowModal(true);
-          setType('ADD');
-        }}>Add Experience</button>
+        <Button btnClass='bg-primary px-5 py-2 text-white rounded' text='Add Experience' disabled={status === userStatus.INACTIVE} onClick={handleAddExperience} />
       </div>
       <div className='grid grid-cols-4 gap-5 mt-5 sm:grid-cols-1'>
         {experiences.map(experience => (
@@ -87,22 +91,24 @@ const AdminExperience = () => {
             <h1>Role: {experience.title}</h1>
             <h1 className='h-36 overflow-auto'>{experience.description}</h1>
             <div className='flex justify-end gap-5 mt-5 bottom-0 right-0'>
-              <button className='bg-red-500 text-white px-5 py-2 rounded' onClick={() => {
-                console.log(experience);
-                onDelete(experience);
-              }}>Delete</button>
-              <button className='bg-primary text-white px-5 py-2 rounded' onClick={() => {
-                console.log(experience);
+              <Button btnClass='bg-red-500 text-white px-5 py-2 rounded' text='Delete' disabled={status === userStatus.INACTIVE} onClick={() => handleDeleteExperience(experience)} />
+
+              {/*               <button className='bg-red-500 text-white px-5 py-2 rounded' onClick={() => {
+                handleDeleteExperience(experience);
+              }}>Delete</button> */}
+              <Button btnClass='bg-primary text-white px-5 py-2 rounded' text='Edit' disabled={status === userStatus.INACTIVE} onClick={() => handleEditExperience(experience)} />
+
+              {/*               <button className='bg-primary text-white px-5 py-2 rounded' onClick={() => {
                 setSelectedData(() => experience);
                 setShowModal(true);
                 setType('EDIT');
-              }}>Edit</button>
+              }}>Edit</button> */}
             </div>
           </div>
         ))}
 
       </div>
-      {(type === 'ADD' || selectedData) && <Modal open={showModal} title={selectedData ? 'Edit Experience' : 'Add Experience'} footer={null} onCancel={() => {
+      {(type === 'ADD' || selectedData) && <Modal open={showModal} title={type === 'ADD' ? 'Add Experience' : 'Edit Experience'} footer={null} onCancel={() => {
         setShowModal(false);
         setSelectedData(initialState);
       }}>

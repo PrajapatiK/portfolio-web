@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 const SideBar = () => {
   const { loading, portfolioData } = useSelector(state => state.root);
   const { social = {} } = portfolioData || {};
-  console.log(portfolioData);
   return (
     <div className='fixed left-0 bottom-0 px-10 py-4 sm:static'>
       <div className='flex flex-col items-center'>

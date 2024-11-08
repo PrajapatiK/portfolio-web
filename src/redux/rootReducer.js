@@ -8,10 +8,8 @@ export const appReducer = combineReducers({
 });
 
 export const rootReducer = (state, action) => {
-  console.log('Root Reducer: ', action, action.type, action.paylod);
   if (action.type === 'LOGOUT' || action.type === 'root/resetRootState') {
     state = action.payload;
   }
-  console.log('State: ', state);
   return appReducer(state, action);
 };

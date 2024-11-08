@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../../components/Header";
 import About from "./about";
 import Contact from "./contact";
@@ -12,9 +11,13 @@ import Projects from "./projects";
 import SideBar from "./sideBar";
 import CenterContent from "../../components/centerContent";
 import { setLoading, setPortfolioData } from "../../redux/rootSlice";
+import { apiGet } from "../../services/api";
+import { getQueryStringFromURL } from "../../lib/util";
+// import { ADMIN_ROLE } from "../../lib/common/constants";
 
 const Home = () => {
   const [error, setError] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading, portfolioData } = useSelector(state => state.root);
@@ -24,26 +27,26 @@ const Home = () => {
   useEffect(() => {
     const getPortfolioData = async () => {
       try {
-        console.log('getPortfolioData called');
         dispatch(setLoading(true));
-        const portfolioData = await axios.get(`${process.env.REACT_APP_API_BASEURL}/api/v1/portfolio/getAllPortfolio?username=${user?.username || process.env.REACT_APP_USERNAME}`);
-        console.log(portfolioData.data.data)
-        dispatch(setPortfolioData(portfolioData.data.data));
+        const params = getQueryStringFromURL();
+        console.log(params);
+        const username = user?.username || params.username || process.env.REACT_APP_USERNAME;
+        // const Username = user?.role === ADMIN_ROLE ?  user?.username;
+        setSearchParams({ username });
+        const portfolioData = await apiGet(`/getAllPortfolio?username=${username}`);
+        dispatch(setPortfolioData(portfolioData.data));
         dispatch(setLoading(false));
       } catch (err) {
         dispatch(setLoading(false));
-        console.log(err);
-        if (err.code === 'ERR_NETWORK') setError(err.message);
+        setError(err?.data?.message);
       }
     }
-    console.log(portfolioData);
     getPortfolioData();
   }, [])
 
-  console.log(error);
   return (
     <div>
-      <Header headerText='My Portfolio' />
+      {/* <Header headerText='My Portfolio' /> */}
       {portfolioData ? <div className="bg-primary px-40 sm:px-5">
         <Intro />
         <About />

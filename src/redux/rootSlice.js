@@ -17,7 +17,6 @@ const rootSlice = createSlice({
       state.portfolioData = action.payload;
     },
     reloadData: (state, action) => {
-      // console.log('reloadData action: ', action);
       state.reloadData = action.payload;
     },
     resetRootState: (state, action) => {
