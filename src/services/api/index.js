@@ -9,6 +9,8 @@ export const apiGet = (url) => {
   const headers = {
     // Authorization: `Bearer null`,
   };
+  console.log(process.env);
+  
   return axios.get(`${process.env.REACT_APP_API_BASEURL}${process.env.REACT_APP_API_VERSION}${url}`, { withCredentials: true, headers })
     .then((resdata) => resdata.data)
     .catch((err) => {
